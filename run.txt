@@ -1,0 +1,88 @@
+TCA - Utilizacao e parametros
+=============================
+
+Comando basico
+--------------
+python tca.py INPUTS... -o SAIDA.mp3 [opcoes]
+
+- INPUTS: um ou mais ficheiros .txt .docx .pdf
+- -o / --output: caminho do MP3 final (obrigatorio, exceto com --no-merge)
+
+Backends TTS
+------------
+--tts {gtts|edge|pyttsx3}
+  gtts     : online (Google). Requer internet.
+  edge     : online (Microsoft). Requer internet.
+  pyttsx3  : offline (SAPI no Windows, espeak no Linux).
+
+--voice NOME_OU_ID
+  edge     : ex. pt-BR-AntonioNeural
+  pyttsx3  : nome/ID da voz local (ex. "Microsoft Maria" no Windows, ou um nome do espeak no Linux)
+  gtts     : ignora este parametro (usa lang+tld)
+
+gTTS (opcoes especificas)
+-------------------------
+--lang CODIGO       (default: pt)
+--tld TLD           (default: com.br)  Ex.: com.br (BR), pt (PT)
+--slow              fala pausada
+
+Controlo de chamadas online (gtts/edge)
+---------------------------------------
+--retry N           numero de tentativas por chunk (default: 8)
+--retry-wait S      espera inicial entre tentativas (segundos, default: 3.0)
+--retry-backoff F   fator de backoff exponencial (default: 1.7)
+--throttle S        pausa entre chunks (segundos, default: 1.2)
+
+Tamanho de chunks
+-----------------
+--max-chars N       maximo de caracteres por segmento (default: 4500)
+
+OCR
+---
+--ocr               ativa OCR automatico (default: ativo)
+--no-ocr            desativa OCR
+--ocr-lang COD      idioma do Tesseract (default: por)
+--ocr-dpi N         DPI para rasterizacao do OCR (default: 300)
+
+Merge (juncao)
+--------------
+--no-merge          nao junta, apenas cria os MP3 de cada segmento
+--chunks-dir DIR    grava/usa os chunks neste diretorio (permite retomar)
+--merge-mode {pydub|ffmpegcopy}
+                    pydub (default) re-encode; ffmpegcopy concatena sem re-encode
+--ffmpeg CAMINHO    caminho explicito do executavel ffmpeg (opcional)
+
+Exemplos
+--------
+1) Converter um PDF simples (gTTS BR por padrao):
+   python tca.py documento.pdf -o narracao.mp3
+
+2) Juntar varios ficheiros em um unico MP3:
+   python tca.py cap1.docx cap2.docx notas.txt -o livro.mp3
+
+3) Usar voz PT-PT com gTTS:
+   python tca.py doc.pdf -o out.mp3 --tld pt
+
+4) Usar edge-tts (Microsoft) com voz especifica:
+   python tca.py doc.pdf -o out.mp3 --tts edge --voice pt-BR-AntonioNeural
+
+5) Usar TTS offline (pyttsx3):
+   Windows:
+     python tca.py doc.pdf -o out.mp3 --tts pyttsx3 --voice "Microsoft Maria"
+   Linux (com espeak-ng instalado):
+     python tca.py doc.pdf -o out.mp3 --tts pyttsx3 --voice "brazil"
+
+6) Evitar erros 429 em PDF grande e retomar depois:
+   # gerar apenas os chunks (sem merge), com backoff e pausa
+   python tca.py grande.pdf --no-merge --chunks-dir ./chunks --tts edge --voice pt-BR-AntonioNeural --retry 15 --retry-wait 4 --retry-backoff 1.9 --throttle 1.5
+   # depois juntar
+   python tca.py grande.pdf -o out.mp3 --chunks-dir ./chunks --merge-mode ffmpegcopy
+
+7) Forcar caminho do ffmpeg se nao estiver no PATH:
+   python tca.py doc.pdf -o out.mp3 --ffmpeg "C:\\ffmpeg\\bin\\ffmpeg.exe"
+
+Notas
+-----
+- Se usar --no-merge, o -o nao e necessario. Os MP3s individuais serao gravados no --chunks-dir (ou num diretorio temporario).
+- Para Python 3.13, mantenha o pacote audioop-lts instalado.
+- Se o OCR estiver desativado e o PDF for digitalizado (imagens), pode nao extrair texto. Use --ocr.

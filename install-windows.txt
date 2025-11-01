@@ -1,0 +1,94 @@
+TCA - Instalar ambiente e dependencias
+======================================
+
+Resumo
+------
+Este programa converte TXT/DOCX/PDF em MP3, com OCR opcional e TTS configuravel:
+- gTTS (online)
+- edge-tts (online Microsoft)
+- pyttsx3 (offline SAPI no Windows, espeak-ng no Linux)
+
+Tambem precisa de:
+- ffmpeg (para juntar/converter audio)
+- Tesseract (apenas se usar OCR)
+- espeak-ng (apenas para pyttsx3 no Linux)
+
+Python suportado: 3.9+ (recomendado 3.12).
+Para Python 3.13, instale o pacote "audioop-lts".
+
+--------------------------------------
+1) Preparar projeto (Windows / Linux)
+--------------------------------------
+1. Crie uma pasta de projeto e copie tca.py e requirements.txt para dentro dela.
+
+2. Crie um ambiente virtual (venv).
+
+Windows (PowerShell):
+  py -3.12 -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+  python -m pip install --upgrade pip
+  pip install -r requirements.txt
+
+Linux (Debian/Ubuntu):
+  python3 -m venv .venv
+  source .venv/bin/activate
+  python -m pip install --upgrade pip
+  pip install -r requirements.txt
+
+Observacao para Python 3.13:
+  pip install audioop-lts
+
+--------------------------------------
+2) Instalar ffmpeg
+--------------------------------------
+Windows:
+  winget install --id Gyan.FFmpeg --source winget
+  (feche e reabra o PowerShell se necessario)
+  ffmpeg -version
+
+Linux (Debian/Ubuntu):
+  sudo apt-get update
+  sudo apt-get install -y ffmpeg
+  ffmpeg -version
+
+--------------------------------------
+3) Instalar Tesseract (para OCR)
+--------------------------------------
+Windows:
+  winget install --id UB-Mannheim.TesseractOCR --source winget
+  tesseract --version
+
+Linux (Debian/Ubuntu):
+  sudo apt-get install -y tesseract-ocr tesseract-ocr-por
+  tesseract --version
+
+--------------------------------------
+4) Instalar espeak-ng (apenas se usar pyttsx3 no Linux)
+--------------------------------------
+Linux:
+  sudo apt-get install -y espeak-ng
+
+--------------------------------------
+5) Verificar instalacao de modulos Python
+--------------------------------------
+Ainda dentro da venv:
+  python -c "import fitz; print('PyMuPDF OK:', fitz.__version__)"
+  python -c "from importlib.metadata import version; print('pydub:', version('pydub'))"
+
+Se algo falhar, reinstale:
+  pip install -r requirements.txt
+
+--------------------------------------
+6) Problemas comuns
+--------------------------------------
+- "ModuleNotFoundError: No module named 'fitz'":
+  pip install pymupdf
+
+- "No module named 'audioop'" (Python 3.13):
+  pip install audioop-lts
+
+- "ffmpeg nao encontrado":
+  reabra o terminal apos instalar; ou passe --ffmpeg "C:\\caminho\\ffmpeg.exe"
+
+- "gTTS 429 Too Many Requests":
+  use --retry, --retry-wait, --retry-backoff, --throttle e --chunks-dir para retomar.
